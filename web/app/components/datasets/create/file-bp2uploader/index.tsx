@@ -21,7 +21,7 @@ import useTheme from '@/hooks/use-theme'
 
 const FILES_NUMBER_LIMIT = 20
 
-type IFileUploaderProps = {
+type BP2IFileUploaderProps = {
   fileList: FileItem[]
   titleClassName?: string
   prepareFileList: (files: FileItem[]) => void
@@ -31,7 +31,7 @@ type IFileUploaderProps = {
   notSupportBatchUpload?: boolean
 }
 
-const FileUploader = ({
+const BP2Uploader = ({
   fileList,
   titleClassName,
   prepareFileList,
@@ -39,7 +39,7 @@ const FileUploader = ({
   onFileListUpdate,
   onPreview,
   notSupportBatchUpload,
-}: IFileUploaderProps) => {
+}: BP2IFileUploaderProps) => {
   const { t } = useTranslation()
   const { notify } = useContext(ToastContext)
   const { locale } = useContext(I18n)
@@ -50,7 +50,7 @@ const FileUploader = ({
   const hideUpload = notSupportBatchUpload && fileList.length > 0
 
   const { data: fileUploadConfigResponse } = useSWR({ url: '/files/upload' }, fetchFileUploadConfig)
-  const { data: supportFileTypesResponse } = useSWR({ url: '/files/support-type' }, fetchSupportFileTypes)
+  const { data: supportFileTypesResponse } = useSWR({ url: '/files/bp2-support-type' }, fetchSupportFileTypes)
   const supportTypes = supportFileTypesResponse?.allowed_extensions || []
   const supportTypesShowNames = (() => {
     const extensionMap: { [key: string]: string } = {
@@ -304,6 +304,7 @@ const FileUploader = ({
           onChange={fileChangeHandle}
           title='-'
         />
+
       )}
 
       <div className={cn('mb-1 text-sm font-semibold leading-6 text-text-secondary', titleClassName)}>{t('datasetCreation.stepOne.uploader.title')}</div>
@@ -379,4 +380,4 @@ const FileUploader = ({
   )
 }
 
-export default FileUploader
+export default BP2Uploader

@@ -15,6 +15,9 @@ VIDEO_EXTENSIONS.extend([ext.upper() for ext in VIDEO_EXTENSIONS])
 AUDIO_EXTENSIONS = ["mp3", "m4a", "wav", "amr", "mpga"]
 AUDIO_EXTENSIONS.extend([ext.upper() for ext in AUDIO_EXTENSIONS])
 
+BP2_DOCUMENT_EXTENSIONS = ["txt", "markdown", "md", "mdx", "pdf", "html", "htm", "xlsx", "xls", "docx",\
+        "csv","vtt","properties","doc", "docx", "csv", "eml", "msg", "pptx", "xml", "epub"]
+BP2_DOCUMENT_EXTENSIONS.extend([ext.upper() for ext in BP2_DOCUMENT_EXTENSIONS])
 
 if dify_config.ETL_TYPE == "Unstructured":
     DOCUMENT_EXTENSIONS = ["txt", "markdown", "md", "mdx", "pdf", "html", "htm", "xlsx", "xls", "vtt", "properties"]

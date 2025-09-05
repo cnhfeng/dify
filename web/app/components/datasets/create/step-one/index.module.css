@@ -47,6 +47,16 @@
   background-size: 16px;
 }
 
+.datasetIcon.bp2 {
+  background-image: url(../assets/BP2Upload.svg);
+  background-size: 16px;
+}
+
+.datasetIcon.syncBp2 {
+  background-image: url(../assets/syncbp.svg);
+  background-size: 24px;
+}
+
 .datasetIcon.notion {
   background-image: url(../assets/notion.svg);
   background-size: 20px;

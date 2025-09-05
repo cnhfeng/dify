@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { RiArrowRightLine, RiFolder6Line } from '@remixicon/react'
 import FilePreview from '../file-preview'
 import FileUploader from '../file-uploader'
+import SyncBP2Uploader from '../file-sync-bp2uploader'
+import BP2Uploader from '../file-bp2uploader'
+import BP2FileList from '../file-preview/bp2FileList'
 import NotionPagePreview from '../notion-page-preview'
 import EmptyDatasetCreationModal from '../empty-dataset-creation-modal'
 import Website from '../website'
@@ -87,6 +90,8 @@ const StepOne = ({
 }: IStepOneProps) => {
   const { dataset } = useDatasetDetailContext()
   const [showModal, setShowModal] = useState(false)
+  const [currentBP2File, setCurrentBP2File] = useState<File | undefined>()
+  const [_, setCurrentSyncBP2File] = useState<File | undefined>()
   const [currentFile, setCurrentFile] = useState<File | undefined>()
   const [currentNotionPage, setCurrentNotionPage] = useState<NotionPage | undefined>()
   const [currentWebsite, setCurrentWebsite] = useState<CrawlResultItem | undefined>()
@@ -94,6 +99,22 @@ const StepOne = ({
 
   const modalShowHandle = () => setShowModal(true)
   const modalCloseHandle = () => setShowModal(false)
+
+  const updateCurrentSyncBP2File = useCallback((file: File) => {
+    setCurrentSyncBP2File(file)
+  }, [])
+
+  const hideSyncBP2FilePreview = useCallback(() => {
+    setCurrentSyncBP2File(undefined)
+  }, [])
+
+  const updateCurrentBP2File = useCallback((file: File) => {
+    setCurrentBP2File(file)
+  }, [])
+
+  const hideBP2FilePreview = useCallback(() => {
+    setCurrentBP2File(undefined)
+  }, [])
 
   const updateCurrentFile = useCallback((file: File) => {
     setCurrentFile(file)
@@ -156,6 +177,56 @@ const StepOne = ({
                       className={cn(
                         s.dataSourceItem,
                         'system-sm-medium',
+                        dataSourceType === DataSourceType.BP2 && s.active,
+                        dataSourceTypeDisable && dataSourceType !== DataSourceType.BP2 && s.disabled,
+                      )}
+                      onClick={() => {
+                        if (dataSourceTypeDisable)
+                          return
+                        changeType(DataSourceType.BP2)
+                        hideSyncBP2FilePreview()
+                        hideFilePreview()
+                        hideNotionPagePreview()
+                        hideWebsitePreview()
+                      }}
+                    >
+                      <span className={cn(s.datasetIcon, s.bp2)} />
+                      <span
+                        title={t('datasetCreation.stepOne.dataSourceType.bp2')!}
+                        className='truncate'
+                      >
+                        {t('datasetCreation.stepOne.dataSourceType.bp2')}
+                      </span>
+                    </div>
+                    <div
+                      className={cn(
+                        s.dataSourceItem,
+                        'system-sm-medium',
+                        dataSourceType === DataSourceType.SYNC_BP2 && s.active,
+                        dataSourceTypeDisable && dataSourceType !== DataSourceType.SYNC_BP2 && s.disabled,
+                      )}
+                      onClick={() => {
+                        if (dataSourceTypeDisable)
+                          return
+                        changeType(DataSourceType.SYNC_BP2)
+                        hideBP2FilePreview()
+                        hideFilePreview()
+                        hideNotionPagePreview()
+                        hideWebsitePreview()
+                      }}
+                    >
+                      <span className={cn(s.datasetIcon, s.syncBp2)} />
+                      <span
+                        title={t('datasetCreation.stepOne.dataSourceType.syncBp2')!}
+                        className='truncate'
+                      >
+                        {t('datasetCreation.stepOne.dataSourceType.syncBp2')}
+                      </span>
+                    </div>
+                    <div
+                      className={cn(
+                        s.dataSourceItem,
+                        'system-sm-medium',
                         dataSourceType === DataSourceType.FILE && s.active,
                         dataSourceTypeDisable && dataSourceType !== DataSourceType.FILE && s.disabled,
                       )}
@@ -163,6 +234,8 @@ const StepOne = ({
                         if (dataSourceTypeDisable)
                           return
                         changeType(DataSourceType.FILE)
+                        hideSyncBP2FilePreview()
+                        hideBP2FilePreview()
                         hideNotionPagePreview()
                         hideWebsitePreview()
                       }}
@@ -186,6 +259,8 @@ const StepOne = ({
                         if (dataSourceTypeDisable)
                           return
                         changeType(DataSourceType.NOTION)
+                        hideSyncBP2FilePreview()
+                        hideBP2FilePreview()
                         hideFilePreview()
                         hideWebsitePreview()
                       }}
@@ -210,6 +285,8 @@ const StepOne = ({
                           if (dataSourceTypeDisable)
                             return
                           changeType(DataSourceType.WEB)
+                          hideSyncBP2FilePreview()
+                          hideBP2FilePreview()
                           hideFilePreview()
                           hideNotionPagePreview()
                         }}
@@ -226,6 +303,60 @@ const StepOne = ({
                   </div>
                 )
               }
+              {dataSourceType === DataSourceType.BP2 && (
+                <>
+                  <BP2Uploader
+                    fileList={files}
+                    titleClassName={!shouldShowDataSourceTypeList ? 'mt-[30px] !mb-[44px] !text-lg' : undefined}
+                    prepareFileList={updateFileList}
+                    onFileListUpdate={updateFileList}
+                    onFileUpdate={updateFile}
+                    onPreview={updateCurrentBP2File}
+                    notSupportBatchUpload={notSupportBatchUpload}
+                  />
+                  {isShowVectorSpaceFull && (
+                    <div className='mb-4 max-w-[640px]'>
+                      <VectorSpaceFull />
+                    </div>
+                  )}
+                  <div className="flex max-w-[640px] justify-end gap-2">
+                    {/* <Button>{t('datasetCreation.stepOne.cancel')}</Button> */}
+                    <Button disabled={nextDisabled} variant='primary' onClick={onStepChange}>
+                      <span className="flex gap-0.5 px-[10px]">
+                        <span className="px-0.5">{t('datasetCreation.stepOne.button')}</span>
+                        <RiArrowRightLine className="size-4" />
+                      </span>
+                    </Button>
+                  </div>
+                </>
+              )}
+              {dataSourceType === DataSourceType.SYNC_BP2 && (
+                <>
+                  <SyncBP2Uploader
+                    fileList={files}
+                    titleClassName={!shouldShowDataSourceTypeList ? 'mt-[30px] !mb-[44px] !text-lg' : undefined}
+                    prepareFileList={updateFileList}
+                    onFileListUpdate={updateFileList}
+                    onFileUpdate={updateFile}
+                    onPreview={updateCurrentSyncBP2File}
+                    notSupportBatchUpload={notSupportBatchUpload}
+                  />
+                  {isShowVectorSpaceFull && (
+                    <div className='mb-4 max-w-[640px]'>
+                      <VectorSpaceFull />
+                    </div>
+                  )}
+                  <div className="flex max-w-[640px] justify-end gap-2">
+                    {/* <Button>{t('datasetCreation.stepOne.cancel')}</Button> */}
+                    <Button disabled={nextDisabled} variant='primary' onClick={onStepChange}>
+                      <span className="flex gap-0.5 px-[10px]">
+                        <span className="px-0.5">{t('datasetCreation.stepOne.button')}</span>
+                        <RiArrowRightLine className="size-4" />
+                      </span>
+                    </Button>
+                  </div>
+                </>
+              )}
               {dataSourceType === DataSourceType.FILE && (
                 <>
                   <FileUploader
@@ -326,9 +457,22 @@ const StepOne = ({
           </div>
         </div>
         <div className='h-full w-1/2 overflow-y-auto'>
+          {currentBP2File && <FilePreview file={currentBP2File} hidePreview={hideBP2FilePreview} />}
           {currentFile && <FilePreview file={currentFile} hidePreview={hideFilePreview} />}
           {currentNotionPage && <NotionPagePreview currentPage={currentNotionPage} hidePreview={hideNotionPagePreview} />}
           {currentWebsite && <WebsitePreview payload={currentWebsite} hidePreview={hideWebsitePreview} />}
+          {dataSourceType === DataSourceType.SYNC_BP2 && (
+            <>
+              <BP2FileList
+                onFileListUpdate={(newFiles) => {
+                // 将新选择的文件添加到现有fileList中
+                  const updatedFiles = [...files, ...newFiles]
+                // 调用updateFileList更新父组件的fileList状态
+                  updateFileList(updatedFiles)
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

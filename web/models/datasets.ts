@@ -6,6 +6,8 @@ import type { MetadataFilteringVariableType } from '@/app/components/workflow/no
 import type { MetadataItemWithValue } from '@/app/components/datasets/metadata/types'
 
 export enum DataSourceType {
+  BP2 = 'bp2',
+  SYNC_BP2 = 'sync_bp2',
   FILE = 'upload_file',
   NOTION = 'notion_import',
   WEB = 'website_crawl',

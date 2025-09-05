@@ -29,6 +29,8 @@ const translation = {
     filePreview: '文件预览',
     pagePreview: '页面预览',
     dataSourceType: {
+      bp2: '上传文本到 BP2',
+      syncBp2: '同步 BP2 文件',
       file: '导入已有文本',
       notion: '同步自 Notion 内容',
       web: '同步自 Web 站点',

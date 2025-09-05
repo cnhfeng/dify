@@ -33,7 +33,7 @@ const DatasetUpdateForm = ({ datasetId }: DatasetUpdateFormProps) => {
   const { t } = useTranslation()
   const { setShowAccountSettingModal } = useModalContext()
   const [hasConnection, setHasConnection] = useState(true)
-  const [dataSourceType, setDataSourceType] = useState<DataSourceType>(DataSourceType.FILE)
+  const [dataSourceType, setDataSourceType] = useState<DataSourceType>(DataSourceType.BP2)
   const [step, setStep] = useState(1)
   const [indexingTypeCache, setIndexTypeCache] = useState('')
   const [retrievalMethodCache, setRetrievalMethodCache] = useState('')

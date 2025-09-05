@@ -7,7 +7,7 @@ from werkzeug.exceptions import Forbidden
 
 import services
 from configs import dify_config
-from constants import DOCUMENT_EXTENSIONS
+from constants import BP2_DOCUMENT_EXTENSIONS, DOCUMENT_EXTENSIONS
 from controllers.common.errors import (
     FilenameNotExistsError,
     FileTooLargeError,
@@ -99,3 +99,10 @@ class FileSupportTypeApi(Resource):
     @account_initialization_required
     def get(self):
         return {"allowed_extensions": DOCUMENT_EXTENSIONS}
+
+class BP2SupportTypeApi(Resource):
+    @setup_required
+    @login_required
+    @account_initialization_required
+    def get(self):
+        return {"allowed_extensions": BP2_DOCUMENT_EXTENSIONS}

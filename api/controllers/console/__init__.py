@@ -22,11 +22,14 @@ from .explore.workflow import (
     InstalledAppWorkflowRunApi,
     InstalledAppWorkflowTaskStopApi,
 )
-from .files import FileApi, FilePreviewApi, FileSupportTypeApi
+from .files import BP2SupportTypeApi, FileApi, FilePreviewApi, FileSupportTypeApi
 from .remote_files import RemoteFileInfoApi, RemoteFileUploadApi
 
 bp = Blueprint("console", __name__, url_prefix="/console/api")
 api = ExternalApi(bp)
+
+# BP2 File Type
+api.add_resource(BP2SupportTypeApi, "/files/bp2-support-type")
 
 # File
 api.add_resource(FileApi, "/files/upload")

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useContext } from 'use-context-selector'
 import useSWR from 'swr'
-import { RiDeleteBinLine, RiUploadCloud2Line } from '@remixicon/react'
+import { RiDeleteBinLine } from '@remixicon/react'
 import DocumentFileIcon from '../../common/document-file-icon'
 import cn from '@/utils/classnames'
 import type { CustomFile as File, FileItem } from '@/models/datasets'
@@ -12,16 +12,13 @@ import SimplePieChart from '@/app/components/base/simple-pie-chart'
 
 import { upload } from '@/service/base'
 import { fetchFileUploadConfig } from '@/service/common'
-import { fetchSupportFileTypes } from '@/service/datasets'
-import I18n from '@/context/i18n'
-import { LanguagesSupported } from '@/i18n-config/language'
 import { IS_CE_EDITION } from '@/config'
 import { Theme } from '@/types/app'
 import useTheme from '@/hooks/use-theme'
 
 const FILES_NUMBER_LIMIT = 20
 
-type IFileUploaderProps = {
+type SyncBP2IFileUploaderProps = {
   fileList: FileItem[]
   titleClassName?: string
   prepareFileList: (files: FileItem[]) => void
@@ -31,7 +28,7 @@ type IFileUploaderProps = {
   notSupportBatchUpload?: boolean
 }
 
-const FileUploader = ({
+const SyncBP2Uploader = ({
   fileList,
   titleClassName,
   prepareFileList,
@@ -39,41 +36,21 @@ const FileUploader = ({
   onFileListUpdate,
   onPreview,
   notSupportBatchUpload,
-}: IFileUploaderProps) => {
+}: SyncBP2IFileUploaderProps) => {
   const { t } = useTranslation()
   const { notify } = useContext(ToastContext)
-  const { locale } = useContext(I18n)
-  const [dragging, setDragging] = useState(false)
+  const [_, setDragging] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const fileUploader = useRef<HTMLInputElement>(null)
   const hideUpload = notSupportBatchUpload && fileList.length > 0
 
   const { data: fileUploadConfigResponse } = useSWR({ url: '/files/upload' }, fetchFileUploadConfig)
-  const { data: supportFileTypesResponse } = useSWR({ url: '/files/support-type' }, fetchSupportFileTypes)
-  const supportTypes = supportFileTypesResponse?.allowed_extensions || []
-  const supportTypesShowNames = (() => {
-    const extensionMap: { [key: string]: string } = {
-      md: 'markdown',
-      pptx: 'pptx',
-      htm: 'html',
-      xlsx: 'xlsx',
-      docx: 'docx',
-    }
 
-    return [...supportTypes]
-      .map(item => extensionMap[item] || item) // map to standardized extension
-      .map(item => item.toLowerCase()) // convert to lower case
-      .filter((item, index, self) => self.indexOf(item) === index) // remove duplicates
-      .map(item => item.toUpperCase()) // convert to upper case
-      .join(locale !== LanguagesSupported[1] ? ', ' : '、 ')
-  })()
-  const ACCEPTS = supportTypes.map((ext: string) => `.${ext}`)
   const fileUploadConfig = useMemo(() => fileUploadConfigResponse ?? {
     file_size_limit: 15,
     batch_count_limit: 5,
   }, [fileUploadConfigResponse])
-
   const fileListRef = useRef<FileItem[]>([])
 
   // utils
@@ -91,20 +68,6 @@ const FileUploader = ({
 
     return `${(size / 1024 / 1024).toFixed(2)}MB`
   }
-
-  const isValid = useCallback((file: File) => {
-    const { size } = file
-    const ext = `.${getFileType(file)}`
-    const isValidType = ACCEPTS.includes(ext.toLowerCase())
-    if (!isValidType)
-      notify({ type: 'error', message: t('datasetCreation.stepOne.uploader.validation.typeError') })
-
-    const isValidSize = size <= fileUploadConfig.file_size_limit * 1024 * 1024
-    if (!isValidSize)
-      notify({ type: 'error', message: t('datasetCreation.stepOne.uploader.validation.size', { size: fileUploadConfig.file_size_limit }) })
-
-    return isValidType && isValidSize
-  }, [fileUploadConfig, notify, t, ACCEPTS])
 
   const fileUpload = useCallback(async (fileItem: FileItem): Promise<FileItem> => {
     const formData = new FormData()
@@ -253,15 +216,10 @@ const FileUploader = ({
       )
       let files = nested.flat()
       if (notSupportBatchUpload) files = files.slice(0, 1)
-      const valid = files.filter(isValid)
-      initialUpload(valid)
+      initialUpload(files)
     },
-    [initialUpload, isValid, notSupportBatchUpload, traverseFileEntry],
+    [initialUpload, notSupportBatchUpload, traverseFileEntry],
   )
-  const selectHandle = () => {
-    if (fileUploader.current)
-      fileUploader.current.click()
-  }
 
   const removeFile = (fileID: string) => {
     if (fileUploader.current)
@@ -272,8 +230,8 @@ const FileUploader = ({
   }
   const fileChangeHandle = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = [...(e.target.files ?? [])] as File[]
-    initialUpload(files.filter(isValid))
-  }, [isValid, initialUpload])
+    initialUpload(files)
+  }, [initialUpload])
 
   const { theme } = useTheme()
   const chartColor = useMemo(() => theme === Theme.dark ? '#5289ff' : '#296dff', [theme])
@@ -300,33 +258,13 @@ const FileUploader = ({
           className="hidden"
           type="file"
           multiple={!notSupportBatchUpload}
-          accept={ACCEPTS.join(',')}
           onChange={fileChangeHandle}
           title='-'
         />
+
       )}
 
       <div className={cn('mb-1 text-sm font-semibold leading-6 text-text-secondary', titleClassName)}>{t('datasetCreation.stepOne.uploader.title')}</div>
-
-      {!hideUpload && (
-        <div ref={dropRef} className={cn('relative mb-2 box-border flex min-h-20 max-w-[640px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-components-dropzone-border bg-components-dropzone-bg px-4 py-3 text-xs leading-4 text-text-tertiary', dragging && 'border-components-dropzone-border-accent bg-components-dropzone-bg-accent')}>
-          <div className="flex min-h-5 items-center justify-center text-sm leading-4 text-text-secondary">
-            <RiUploadCloud2Line className='mr-2 size-5' />
-
-            <span>
-              {notSupportBatchUpload ? t('datasetCreation.stepOne.uploader.buttonSingleFile') : t('datasetCreation.stepOne.uploader.button')}
-              {supportTypes.length > 0 && (
-                <label className="ml-1 cursor-pointer text-text-accent" onClick={selectHandle}>{t('datasetCreation.stepOne.uploader.browse')}</label>
-              )}
-            </span>
-          </div>
-          <div>{t('datasetCreation.stepOne.uploader.tip', {
-            size: fileUploadConfig.file_size_limit,
-            supportTypes: supportTypesShowNames,
-          })}</div>
-          {dragging && <div ref={dragRef} className='absolute left-0 top-0 h-full w-full' />}
-        </div>
-      )}
       <div className='max-w-[640px] cursor-default space-y-1'>
 
         {fileList.map((fileItem, index) => (
@@ -379,4 +317,4 @@ const FileUploader = ({
   )
 }
 
-export default FileUploader
+export default SyncBP2Uploader
